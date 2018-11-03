@@ -34,28 +34,48 @@ client.login(process.env.BOT_TOKEN);
 
 //للكل
 
-client.on('message',async message => {
-  if(message.author.bot || message.channel.type === '$Fivebc') return;
-  let args = message.content.split(' ');
-  if(args[0] === `$Fivebc`) {
-    if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send('- **أنت لا تملك الصلاحيات اللازمة لأستخدام هذا الأمر**');
-    if(!args[1]) return message.channel.send('- **يجب عليك كتابة الرسالة بعد الأمر**');
-  
-    let msgCount = 0;
-    let errorCount = 0;
-    let successCount = 0;
-    message.channel.send(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`).then(msg => {
-      message.guild.members.forEach(g => {
-        g.send(args.slice(1).join(' ')).then(() => {
-          successCount++;
-          msgCount++;
-          msg.edit(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`);
-        }).catch(e => {
-          errorCount++;
-          msgCount++;
-          msg.edit(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`);
-        });
-      });
-    });
-  }
+client.on('message', message => {
+        var prefix = '$'; // هنا تقدر تغير البرفكس
+	var command = message.content.split(" ")[0];
+	if(command == prefix + 'Fivebc') { // الكوماند {prefix} bc
+	if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send(`**${message.author.username} يا حلو كيف تبي تسوي برود كاست وما معك *ADMINISTRATOR*`);
+		var args = message.content.split(' ').slice(1).join(' ');
+		if(message.author.bot) return;
+	if(!args) return message.channel.send(`**➥ Useage:** ${prefix}bc كلامك `);
+		
+		let bcSure = new Discord.RichEmbed()
+		.setTitle(`:mailbox_with_mail: **هل انت متأكد انك تريد ارسال رسالتك الى** ${message.guild.memberCount} **عضو**`)
+		.setThumbnail(client.user.avatarURL)
+		.setColor('RANDOM')
+		.setDescription(`**\n:envelope: ➥ رسالتك**\n\n${args}`)
+		.setTimestamp()
+		.setFooter(message.author.tag, message.author.avatarURL)
+		
+		message.channel.send(bcSure).then(msg => {
+			msg.react('✅').then(() => msg.react('❎'));
+			message.delete();
+			
+			
+			let yesEmoji = (reaction, user) => reaction.emoji.name === '✅'  && user.id === message.author.id;
+			let noEmoji = (reaction, user) => reaction.emoji.name === '❎' && user.id === message.author.id;
+			
+			let sendBC = msg.createReactionCollector(yesEmoji);
+			let dontSendBC = msg.createReactionCollector(noEmoji);
+			
+			sendBC.on('collect', r => {
+				message.guild.members.forEach(member => {
+					member.send(args.replace(`[user]`, member)).catch();
+					if(message.attachments.first()){
+						member.sendFile(message.attachments.first().url).catch();
+					}
+				})
+				message.channel.send(`:timer: **يتم الان الارسال الى** \`\`${message.guild.memberCount}\`\` **عضو**`).then(msg => msg.delete(5000));
+				msg.delete();
+			})
+			dontSendBC.on('collect', r => {
+				msg.delete();
+				message.reply(':white_check_mark: **تم الغاء ارسال رسالتك بنجاح**').then(msg => msg.delete(5000));
+			});
+		})
+	}
 });
