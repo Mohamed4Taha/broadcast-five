@@ -37,48 +37,32 @@ client.login(process.env.BOT_TOKEN);
 
 //للكل
 
+
+
 client.on('message', message => {
-        var prefix = '$'; // هنا تقدر تغير البرفكس
-	var command = message.content.split(" ")[0];
-	if(command == prefix + 'Fivebc') { // الكوماند {prefix} bc
-	if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send(`**${message.author.username} يا حلو كيف تبي تسوي برود كاست وما معك *ADMINISTRATOR*`);
-		var args = message.content.split(' ').slice(1).join(' ');
-		if(message.author.bot) return;
-	if(!args) return message.channel.send(`**➥ Useage:** ${prefix}bc كلامك `);
-		
-		let bcSure = new Discord.RichEmbed()
-		.setTitle(`:mailbox_with_mail: **هل انت متأكد انك تريد ارسال رسالتك الى** ${message.guild.memberCount} **عضو**`)
-		.setThumbnail(client.user.avatarURL)
-		.setColor('RANDOM')
-		.setDescription(`**\n:envelope: ➥ رسالتك**\n\n${args}`)
-		.setTimestamp()
-		.setFooter(message.author.tag, message.author.avatarURL)
-		
-		message.channel.send(bcSure).then(msg => {
-			msg.react('✅').then(() => msg.react('❎'));
-			message.delete();
-			
-			
-			let yesEmoji = (reaction, user) => reaction.emoji.name === '✅'  && user.id === message.author.id;
-			let noEmoji = (reaction, user) => reaction.emoji.name === '❎' && user.id === message.author.id;
-			
-			let sendBC = msg.createReactionCollector(yesEmoji);
-			let dontSendBC = msg.createReactionCollector(noEmoji);
-			
-			sendBC.on('collect', r => {
-				message.guild.members.forEach(member => {
-					member.send(args.replace(`[user]`, member)).catch();
-					if(message.attachments.first()){
-						member.sendFile(message.attachments.first().url).catch();
-					}
-				})
-				message.channel.send(`:timer: **يتم الان الارسال الى** \`\`${message.guild.memberCount}\`\` **عضو**`).then(msg => msg.delete(5000));
-				msg.delete();
-			})
-			dontSendBC.on('collect', r => {
-				msg.delete();
-				message.reply(':white_check_mark: **تم الغاء ارسال رسالتك بنجاح**').then(msg => msg.delete(5000));
-			});
-		})
-	}
+  if(message.content.split(' ')[0] == '$Fivebc') {
+            if(!message.member.hasPermission('ADMINISTRATOR')) return message.reply('⚠ | **لا يوجد لديك صلاحية **');
+        if (message.author.id === client.user.id) return;
+        if (message.guild) {
+       let embed = new Discord.RichEmbed()
+        let args = message.content.split(' ').slice(1).join(' ');
+        if (!args[1]) {
+    message.channel.send(`**$Fivebc <message>**`);
+    return;
+    }
+            message.guild.members.forEach(m => {
+                var bc = new Discord.RichEmbed()
+                .setThumbnail(message.guild.iconURL)
+                .setFooter(`» مرسلة من قبل: ${message.author.username}#${message.author.discriminator}`)
+                .setDescription(args)
+                .setColor('RANDOM')
+                // m.send(`[${m}]`);
+                m.send({embed: bc}).catch(err => {console.log("[Broadcast] Couldn't send message to this user because he's closing his DM!")});
+            });
+            message.channel.send("**📢 | يتم إرسال البرودكسات**");
+    }
+    } else {
+        return;
+    }
 });
+  
