@@ -39,30 +39,28 @@ client.login(process.env.BOT_TOKEN);
 
 
 
-client.on('message', message => {
-  if(message.content.split(' ')[0] == '$Fivebc') {
-            if(!message.member.hasPermission('ADMINISTRATOR')) return message.reply('⚠ | **لا يوجد لديك صلاحية **');
-        if (message.author.id === client.user.id) return;
-        if (message.guild) {
-       let embed = new Discord.RichEmbed()
-        let args = message.content.split(' ').slice(1).join(' ');
-        if (!args[1]) {
-    message.channel.send(`**$Fivebc <message>**`);
-    return;
-    }
-            message.guild.members.forEach(m => {
-                var bc = new Discord.RichEmbed()
-                .setThumbnail(message.guild.iconURL)
-                .setFooter(`» مرسلة من قبل: ${message.author.username}#${message.author.discriminator}`)
-                .setDescription(args)
-                .setColor('RANDOM')
-                // m.send(`[${m}]`);
-                m.send({embed: bc}).catch(err => {console.log("[Broadcast] Couldn't send message to this user because he's closing his DM!")});
-            });
-            message.channel.send("**📢 | يتم إرسال البرودكسات**");
-    }
-    } else {
-        return;
-    }
-});
+client.on('message',async message => {
+  if(message.author.bot || message.channel.type === '.bc') return;
+  let args = message.content.split(' ');
+  if(args[0] === `.bc`) {
+    if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send('- **أنت لا تملك الصلاحيات اللازمة لأستخدام هذا الأمر**');
+    if(!args[1]) return message.channel.send('- **يجب عليك كتابة الرسالة بعد الأمر**');
   
+    let msgCount = 0;
+    let errorCount = 0;
+    let successCount = 0;
+    message.channel.send(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`).then(msg => {
+      message.guild.members.forEach(g => {
+        g.send(args.slice(1).join(' ')).then(() => {
+          successCount++;
+          msgCount++;
+          msg.edit(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`);
+        }).catch(e => {
+          errorCount++;
+          msgCount++;
+          msg.edit(`**- [ :bookmark: :: ${msgCount} ] ・عدد الرسائل المرسلة**\n**- [ :inbox_tray: :: ${successCount} ] ・عدد الرسائل المستلمة**\n**- [ :outbox_tray: :: ${errorCount} ]・عدد الرسائل الغير مستلمة**`);
+        });
+      });
+    });
+  }
+});
