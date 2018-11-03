@@ -42,7 +42,7 @@ client.login(process.env.BOT_TOKEN);
 client.on('message',async message => {
   if(message.author.bot || message.channel.type === '$Fivebc') return;
   let args = message.content.split(' ');
-  if(args[0] === `.bc`) {
+  if(args[0] === `$Fivebc`) {
     if(!message.member.hasPermission("MANAGE_GUILD")) return message.channel.send('- **أنت لا تملك الصلاحيات اللازمة لأستخدام هذا الأمر**');
     if(!args[1]) return message.channel.send('- **يجب عليك كتابة الرسالة بعد الأمر**');
   
