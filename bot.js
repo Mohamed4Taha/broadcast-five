@@ -32,6 +32,9 @@ client.login(process.env.BOT_TOKEN);
 
 
 
+
+
+
 //للكل
 
 client.on('message', message => {
